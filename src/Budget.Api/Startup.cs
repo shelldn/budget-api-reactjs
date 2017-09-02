@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Converters;
 
 namespace Budget.Api
 {
@@ -16,7 +17,12 @@ namespace Budget.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddCors();
+            services.AddMvc()
+                .AddJsonOptions(o =>
+                {
+                    o.SerializerSettings.Converters.Add(new StringEnumConverter(true));
+                });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -25,6 +31,12 @@ namespace Budget.Api
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseCors(b => b
+                .WithOrigins("http://192.168.255.133:3000")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+            );
 
             app.UseMvc();
         }
