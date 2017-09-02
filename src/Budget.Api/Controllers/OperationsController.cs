@@ -17,6 +17,15 @@ namespace Budget.Api.Controllers
                 Plan = 100.0m,
                 Fact = 200.0m,
             };
+
+            yield return new OperationSummary
+            {
+                Id = 20,
+                CategoryId = 30,
+                Month = 10,
+                Plan = 25.0m,
+                Fact = 0m
+            };
         }
     }
 }
