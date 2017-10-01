@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
-using Budget.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Budget.Api.Controllers
+namespace Budget.Api.Categories
 {
     [Route("api/budgets/{year:int}/[controller]")]
     public sealed class CategoriesController : Controller

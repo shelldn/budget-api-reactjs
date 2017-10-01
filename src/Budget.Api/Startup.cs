@@ -33,7 +33,7 @@ namespace Budget.Api
             }
 
             app.UseCors(b => b
-                .WithOrigins("http://192.168.255.133:3000")
+                .WithOrigins("http://localhost:3000")
                 .AllowAnyHeader()
                 .AllowAnyMethod()
             );

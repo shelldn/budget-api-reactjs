@@ -1,4 +1,4 @@
-﻿namespace Budget.Api.Models
+﻿namespace Budget.Api.Categories
 {
     public sealed class CategorySummary
     {
