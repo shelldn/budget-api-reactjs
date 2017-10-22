@@ -50,5 +50,18 @@ namespace Budget.Api.Categories
 
             return Created("", category);
         }
+
+        [HttpDelete("/api/[controller]/{id}")]
+        public void Delete(string id)
+        {
+            var client = new MongoClient("mongodb://192.168.255.129:27017");
+            var db = client.GetDatabase("budgetio");
+            var categories = db.GetCollection<BsonDocument>("categories");
+
+            categories.DeleteOne(new BsonDocument
+            {
+                ["_id"] = ObjectId.Parse(id)
+            });
+        }
     }
 }
