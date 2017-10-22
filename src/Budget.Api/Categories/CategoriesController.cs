@@ -1,5 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using System.Linq;
 
 namespace Budget.Api.Categories
 {
@@ -9,33 +13,42 @@ namespace Budget.Api.Categories
         [HttpGet]
         public IEnumerable<CategorySummary> GetAll(int year)
         {
-            yield return new CategorySummary
+            var client = new MongoClient("mongodb://192.168.255.129:27017");
+            var db = client.GetDatabase("budgetio");
+            var categories = db.GetCollection<BsonDocument>("categories");
+
+            var summaries = categories
+                .Find(c => c["budget_id"] == year)
+                .ToList()
+                .Select(c => new CategorySummary
+                {
+                    Id = c["_id"].AsObjectId.ToString(),
+                    Name = c["name"].AsString,
+                    Type = Enum.Parse<CategoryType>(c["type"].AsString, true)
+                });
+
+            return summaries;
+        }
+
+        [HttpPost]
+        public IActionResult Create(int year, [FromBody] CategorySummary category)
+        {
+            var client = new MongoClient("mongodb://192.168.255.129:27017");
+            var db = client.GetDatabase("budgetio");
+            var categories = db.GetCollection<BsonDocument>("categories");
+
+            var doc = new BsonDocument
             {
-                Id = 10,
-                Name = "Salary",
-                Type = CategoryType.Income
+                ["budget_id"] = year,
+                ["name"] = category.Name,
+                ["type"] = category.Type.ToString().ToLower()
             };
 
-            yield return new CategorySummary
-            {
-                Id = 15,
-                Name = "Cryptocurrencies",
-                Type = CategoryType.Income
-            };
+            categories.InsertOne(doc);
 
-            yield return new CategorySummary
-            {
-                Id = 20,
-                Name = "Food",
-                Type = CategoryType.Outgo
-            };
+            category.Id = doc["_id"].AsObjectId.ToString();
 
-            yield return new CategorySummary
-            {
-                Id = 30,
-                Name = "Books",
-                Type = CategoryType.Outgo
-            };
+            return Created("", category);
         }
     }
 }
