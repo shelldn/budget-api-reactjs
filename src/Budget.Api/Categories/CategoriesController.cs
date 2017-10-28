@@ -51,6 +51,19 @@ namespace Budget.Api.Categories
             return Created("", category);
         }
 
+        [HttpPatch("/api/[controller]/{id}")]
+        public void Update(string id, [FromBody] CategoryNamePatch patch)
+        {
+            var client = new MongoClient("mongodb://192.168.255.129:27017");
+            var db = client.GetDatabase("budgetio");
+            var categories = db.GetCollection<BsonDocument>("categories");
+
+            categories.UpdateOne(
+                new BsonDocument("_id", ObjectId.Parse(id)),
+                new BsonDocument("$set", new BsonDocument("name", patch.Name))
+            );
+        }
+
         [HttpDelete("/api/[controller]/{id}")]
         public void Delete(string id)
         {
