@@ -53,5 +53,22 @@ namespace Budget.Api.Operations
 
             return Created("", operation);
         }
+
+        [HttpPatch("{id}")]
+        public void Update(string id, [FromBody] OperationPatch patch)
+        {
+            var client = new MongoClient("mongodb://192.168.255.129:27017");
+            var db = client.GetDatabase("budgetio");
+            var operations = db.GetCollection<BsonDocument>("operations");
+
+            operations.UpdateOne(
+                new BsonDocument("_id", ObjectId.Parse(id)),
+                new BsonDocument("$set", new BsonDocument
+                {
+                    ["plan"] = patch.Plan,
+                    ["fact"] = patch.Fact
+                })
+            );
+        }
     }
 }
