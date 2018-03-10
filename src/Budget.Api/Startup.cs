@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Converters;
@@ -19,10 +21,26 @@ namespace Budget.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors();
-            services.AddMvc()
+            services
+                .AddMvc(c => {
+
+                    var policy = new AuthorizationPolicyBuilder()
+                        .RequireAuthenticatedUser()
+                        .Build();
+
+                    c.Filters.Add(new AuthorizeFilter(policy));
+                })
+
                 .AddJsonOptions(o =>
                 {
                     o.SerializerSettings.Converters.Add(new StringEnumConverter(true));
+                });
+
+            services
+                .AddAuthentication("Bearer")
+                .AddIdentityServerAuthentication(o => {
+                    o.Authority = "https://demo.identityserver.io";
+                    o.ApiName = "api1";
                 });
         }
 
@@ -39,6 +57,7 @@ namespace Budget.Api
                 .AllowAnyMethod()
             );
 
+            app.UseAuthentication();
             app.UseMvc();
         }
     }
