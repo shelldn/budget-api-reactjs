@@ -5,7 +5,7 @@ COPY *.csproj ./
 RUN dotnet restore
 
 COPY . ./
-RUN dotnet publish -c Release -o out
+RUN dotnet publish -c Release -r linux-x64 -o out
 
 FROM microsoft/dotnet:runtime
 WORKDIR /app

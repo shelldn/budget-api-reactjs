@@ -13,7 +13,7 @@ namespace Budget.Api.Categories
         [HttpGet]
         public IEnumerable<CategorySummary> GetAll(int year)
         {
-            var client = new MongoClient("mongodb://192.168.255.129:27017");
+            var client = new MongoClient("mongodb://0.0.0.0:27017");
             var db = client.GetDatabase("budgetio");
             var categories = db.GetCollection<BsonDocument>("categories");
 
@@ -33,7 +33,7 @@ namespace Budget.Api.Categories
         [HttpPost]
         public IActionResult Create(int year, [FromBody] CategorySummary category)
         {
-            var client = new MongoClient("mongodb://192.168.255.129:27017");
+            var client = new MongoClient("mongodb://0.0.0.0:27017");
             var db = client.GetDatabase("budgetio");
             var categories = db.GetCollection<BsonDocument>("categories");
 
@@ -54,7 +54,7 @@ namespace Budget.Api.Categories
         [HttpPatch("/api/[controller]/{id}")]
         public void Update(string id, [FromBody] CategoryNamePatch patch)
         {
-            var client = new MongoClient("mongodb://192.168.255.129:27017");
+            var client = new MongoClient("mongodb://0.0.0.0:27017");
             var db = client.GetDatabase("budgetio");
             var categories = db.GetCollection<BsonDocument>("categories");
 
@@ -67,7 +67,7 @@ namespace Budget.Api.Categories
         [HttpDelete("/api/[controller]/{id}")]
         public void Delete(string id)
         {
-            var client = new MongoClient("mongodb://192.168.255.129:27017");
+            var client = new MongoClient("mongodb://0.0.0.0:27017");
             var db = client.GetDatabase("budgetio");
             var categories = db.GetCollection<BsonDocument>("categories");
 

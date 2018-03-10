@@ -12,7 +12,7 @@ namespace Budget.Api.Operations
         [HttpGet("/api/budgets/{year:int}/[controller]")]
         public IEnumerable<OperationSummary> GetAll(int year)
         {
-            var client = new MongoClient("mongodb://192.168.255.129:27017");
+            var client = new MongoClient("mongodb://0.0.0.0:27017");
             var db = client.GetDatabase("budgetio");
             var operations = db.GetCollection<BsonDocument>("operations");
 
@@ -34,7 +34,7 @@ namespace Budget.Api.Operations
         [HttpPost("/api/budgets/{year:int}/[controller]")]
         public IActionResult Create(int year, [FromBody] OperationSummary operation)
         {
-            var client = new MongoClient("mongodb://192.168.255.129:27017");
+            var client = new MongoClient("mongodb://0.0.0.0:27017");
             var db = client.GetDatabase("budgetio");
             var operations = db.GetCollection<BsonDocument>("operations");
 
@@ -57,7 +57,7 @@ namespace Budget.Api.Operations
         [HttpPatch("{id}")]
         public void Update(string id, [FromBody] OperationPatch patch)
         {
-            var client = new MongoClient("mongodb://192.168.255.129:27017");
+            var client = new MongoClient("mongodb://0.0.0.0:27017");
             var db = client.GetDatabase("budgetio");
             var operations = db.GetCollection<BsonDocument>("operations");
 
