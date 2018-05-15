@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -9,10 +10,17 @@ namespace Budget.Api.Operations
     [Route("api/[controller]")]
     public sealed class OperationsController : Controller
     {
+        private readonly IConfiguration _config;
+
+        public OperationsController(IConfiguration config)
+        {
+            _config = config;
+        }
+
         [HttpGet("/api/budgets/{year:int}/[controller]")]
         public IEnumerable<OperationSummary> GetAll(int year)
         {
-            var client = new MongoClient("mongodb://0.0.0.0:27017");
+            var client = new MongoClient(_config["connectionString"]);
             var db = client.GetDatabase("budgetio");
             var operations = db.GetCollection<BsonDocument>("operations");
 
@@ -34,7 +42,7 @@ namespace Budget.Api.Operations
         [HttpPost("/api/budgets/{year:int}/[controller]")]
         public IActionResult Create(int year, [FromBody] OperationSummary operation)
         {
-            var client = new MongoClient("mongodb://0.0.0.0:27017");
+            var client = new MongoClient(_config["connectionString"]);
             var db = client.GetDatabase("budgetio");
             var operations = db.GetCollection<BsonDocument>("operations");
 
@@ -57,7 +65,7 @@ namespace Budget.Api.Operations
         [HttpPatch("{id}")]
         public void Update(string id, [FromBody] OperationPatch patch)
         {
-            var client = new MongoClient("mongodb://0.0.0.0:27017");
+            var client = new MongoClient(_config["connectionString"]);
             var db = client.GetDatabase("budgetio");
             var operations = db.GetCollection<BsonDocument>("operations");
 
