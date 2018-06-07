@@ -1,0 +1,13 @@
+version: '3'
+services:
+  api:
+    container_name: budget-api
+    build: ./src/Budget.Api
+    network_mode: host
+
+  db:
+    container_name: budget-db
+    image: 'mongo'
+    volumes:
+      - '/home/shelldn/data:/data/db'
+    network_mode: host
