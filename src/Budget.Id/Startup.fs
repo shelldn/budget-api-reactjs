@@ -8,7 +8,8 @@ open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
-
+open IdentityServer4.Models
+open IdentityServer4
 
 type Startup private () =
     new (configuration: IConfiguration) as this =
@@ -16,12 +17,34 @@ type Startup private () =
         this.Configuration <- configuration
 
     // This method gets called by the runtime. Use this method to add services to the container.
-    member this.ConfigureServices(services: IServiceCollection) =
-        // Add framework services.
+    member __.ConfigureServices(services: IServiceCollection) =
+
+        let allowedScopes =
+            [
+                IdentityServerConstants.StandardScopes.OpenId
+                IdentityServerConstants.StandardScopes.Profile
+                "api1"
+            ]
+            |> List<string>
+
+        let client =
+            Client(
+                ClientId = "js",
+                AllowedGrantTypes = GrantTypes.Implicit,
+                AllowAccessTokensViaBrowser = true,
+                AllowedScopes = allowedScopes)
+
         services.AddMvc() |> ignore
+        services
+            .AddIdentityServer()
+            .AddInMemoryClients([client])
+            .AddInMemoryApiResources([])
+            .AddDeveloperSigningCredential()
+        |> ignore
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     member this.Configure(app: IApplicationBuilder, env: IHostingEnvironment) =
         app.UseMvc() |> ignore
+        app.UseIdentityServer() |> ignore
 
     member val Configuration : IConfiguration = null with get, set
