@@ -39,7 +39,8 @@ namespace Budget.Api
             services
                 .AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication(o => {
-                    o.Authority = "https://demo.identityserver.io";
+                    o.Authority = "http://172.17.0.1:5001";
+                    o.RequireHttpsMetadata = false;
                     o.ApiName = "api1";
                 });
         }

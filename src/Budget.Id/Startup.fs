@@ -9,6 +9,7 @@ open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open IdentityServer4.Models
+open IdentityServer4.Test
 open IdentityServer4
 
 type Startup private () =
@@ -26,19 +27,29 @@ type Startup private () =
       ]
       |> List<string>
 
+    let api_resource = ApiResource("api1", "Some API 1")
+
     let client =
       Client(
-        ClientId = "js",
-        AllowedGrantTypes = GrantTypes.Implicit,
-        AllowAccessTokensViaBrowser = true,
+        ClientId = "ro.client",
+        ClientSecrets = List [ Secret("secret".Sha256()) ],
+        AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
         AllowedScopes = allowedScopes)
+
+    let test_user =
+      TestUser(
+        SubjectId = "1",
+        Username = "shelldn",
+        Password = "qwerty123"
+      )
 
     services.AddMvc() |> ignore
     services
       .AddIdentityServer()
-      .AddInMemoryClients([client])
-      .AddInMemoryApiResources([])
       .AddDeveloperSigningCredential()
+      .AddInMemoryApiResources([ api_resource ])
+      .AddInMemoryClients([ client ])
+      .AddTestUsers(List [ test_user ])
     |> ignore
 
   member this.Configure(app: IApplicationBuilder, env: IHostingEnvironment) =
