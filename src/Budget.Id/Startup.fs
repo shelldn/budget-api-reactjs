@@ -21,8 +21,9 @@ type Startup private () =
 
   let loginHandler (next : HttpFunc) (ctx : HttpContext) =
     task {
+      let events = ctx.GetService<IEventService>()
 
-      do! ctx.GetService<IEventService>().RaiseAsync(new UserLoginSuccessEvent("shelldn", "1", "shelldn"));
+      do! events.RaiseAsync(new UserLoginSuccessEvent("shelldn", "1", "shelldn"))
       do! ctx.SignInAsync("1", "shelldn", null)
       return! next ctx
     }
