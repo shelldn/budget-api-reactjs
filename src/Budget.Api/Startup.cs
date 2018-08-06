@@ -39,7 +39,7 @@ namespace Budget.Api
             services
                 .AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication(o => {
-                    o.Authority = "http://172.17.0.1:5001";
+                    o.Authority = "http://localhost:5001";
                     o.RequireHttpsMetadata = false;
                     o.ApiName = "api1";
                 });

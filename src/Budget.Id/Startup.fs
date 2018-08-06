@@ -31,9 +31,13 @@ type Startup private () =
 
     let client =
       Client(
-        ClientId = "ro.client",
-        ClientSecrets = List [ Secret("secret".Sha256()) ],
-        AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+        ClientId = "js",
+        ClientName = "JavaScript Client",
+        AllowedGrantTypes = GrantTypes.Implicit,
+        AllowAccessTokensViaBrowser = true,
+        RedirectUris = List [ "http://localhost:3000/callback.html" ],
+        PostLogoutRedirectUris = List [ "http://localhost:3000/index.html" ],
+        AllowedCorsOrigins = List [ "http://localhost:3000" ],
         AllowedScopes = allowedScopes)
 
     let test_user =
@@ -43,17 +47,17 @@ type Startup private () =
         Password = "qwerty123"
       )
 
-    services.AddMvc() |> ignore
     services
       .AddIdentityServer()
       .AddDeveloperSigningCredential()
+      .AddInMemoryIdentityResources([ IdentityResources.OpenId() :> IdentityResource; IdentityResources.Profile() :> IdentityResource ])
       .AddInMemoryApiResources([ api_resource ])
       .AddInMemoryClients([ client ])
       .AddTestUsers(List [ test_user ])
     |> ignore
 
   member this.Configure(app: IApplicationBuilder, env: IHostingEnvironment) =
-    app.UseMvc() |> ignore
+    app.UseCors(fun b -> b.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod() |> ignore) |> ignore
     app.UseIdentityServer() |> ignore
 
   member val Configuration : IConfiguration = null with get, set
