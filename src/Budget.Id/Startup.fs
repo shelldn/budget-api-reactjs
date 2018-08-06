@@ -11,13 +11,19 @@ open Microsoft.Extensions.DependencyInjection
 open IdentityServer4.Models
 open IdentityServer4.Test
 open IdentityServer4
+open Giraffe
 
 type Startup private () =
+  let api =
+    route "/account/login" >=> text "Hello, user thas is trying to authorize."
+
   new (configuration: IConfiguration) as this =
     Startup() then
     this.Configuration <- configuration
 
   member __.ConfigureServices(services: IServiceCollection) =
+    
+    services.AddGiraffe() |> ignore
 
     let allowedScopes =
       [
@@ -57,6 +63,7 @@ type Startup private () =
     |> ignore
 
   member this.Configure(app: IApplicationBuilder, env: IHostingEnvironment) =
+    app.UseGiraffe api
     app.UseCors(fun b -> b.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod() |> ignore) |> ignore
     app.UseIdentityServer() |> ignore
 
