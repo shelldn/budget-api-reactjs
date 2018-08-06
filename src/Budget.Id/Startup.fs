@@ -4,18 +4,31 @@ open System
 open System.Collections.Generic
 open System.Linq
 open System.Threading.Tasks
+open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open IdentityServer4.Models
 open IdentityServer4.Test
+open IdentityServer4.Services
+open IdentityServer4.Events
 open IdentityServer4
 open Giraffe
+open FSharp.Control.Tasks.ContextInsensitive
 
 type Startup private () =
+
+  let loginHandler (next : HttpFunc) (ctx : HttpContext) =
+    task {
+
+      do! ctx.GetService<IEventService>().RaiseAsync(new UserLoginSuccessEvent("shelldn", "1", "shelldn"));
+      do! ctx.SignInAsync("1", "shelldn", null)
+      return! next ctx
+    }
+
   let api =
-    route "/account/login" >=> text "Hello, user thas is trying to authorize."
+    route "/account/login" >=> loginHandler >=> redirectTo false "http://localhost:3000/callback.html"
 
   new (configuration: IConfiguration) as this =
     Startup() then
@@ -43,6 +56,7 @@ type Startup private () =
         AllowAccessTokensViaBrowser = true,
         RedirectUris = List [ "http://localhost:3000/callback.html" ],
         PostLogoutRedirectUris = List [ "http://localhost:3000/index.html" ],
+        RequireConsent = false,
         AllowedCorsOrigins = List [ "http://localhost:3000" ],
         AllowedScopes = allowedScopes)
 
