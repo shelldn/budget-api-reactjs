@@ -16,6 +16,7 @@ open IdentityServer4.Events
 open IdentityServer4
 open Giraffe
 open FSharp.Control.Tasks.ContextInsensitive
+open Microsoft.AspNetCore.Authentication
 
 type Startup private () =
 
@@ -24,7 +25,7 @@ type Startup private () =
       let events = ctx.GetService<IEventService>()
 
       do! events.RaiseAsync(new UserLoginSuccessEvent("shelldn", "1", "shelldn"))
-      do! ctx.SignInAsync("1", "shelldn", null)
+      do! ctx.SignInAsync("1", "shelldn", AuthenticationProperties())
       return! next ctx
     }
 
