@@ -5,6 +5,11 @@ services:
     build: ./src/Budget.Api
     network_mode: host
 
+  id:
+    container_name: budget-id
+    build: ./src/Budget.Id
+    network_mode: host
+
   db:
     container_name: budget-db
     image: 'mongo'
