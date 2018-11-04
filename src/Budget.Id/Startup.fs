@@ -18,24 +18,42 @@ open Giraffe
 open FSharp.Control.Tasks.ContextInsensitive
 open Microsoft.AspNetCore.Authentication
 
+module Views =
+  open Giraffe.GiraffeViewEngine
+
+  let login =
+    html [] [
+      head [] [
+        title [] [ encodedText "Budget.io - Sign In" ]
+      ]
+      body [] [
+        p [] [ encodedText "Sign in please:" ]
+        form [ _method "POST" ] [
+          input [ _type "text"; _name "username"; _placeholder "Username" ]
+          input [ _type "password"; _name "password"; _placeholder "Password" ]
+          input [ _type "submit" ]
+        ]
+      ]
+    ]
+
 type Startup private () =
 
   let loginHandler (next : HttpFunc) (ctx : HttpContext) =
     task {
-      let events = ctx.GetService<IEventService>()
-
-      do! events.RaiseAsync(new UserLoginSuccessEvent("shelldn", "1", "shelldn"))
       do! ctx.SignInAsync("1", "shelldn", AuthenticationProperties())
-      return! next ctx
+
+      let returnUrl = ctx.TryGetQueryStringValue "returnUrl"
+
+      match returnUrl with
+      | Some url -> return! redirectTo false url next ctx
+      | None -> return! next ctx
     }
 
   let logoutHandler (next : HttpFunc) (ctx : HttpContext) =
     task {
-      let events = ctx.GetService<IEventService>()
       let interaction = ctx.GetService<IIdentityServerInteractionService>()
 
       do! ctx.SignOutAsync()
-      do! events.RaiseAsync(new UserLogoutSuccessEvent("1", "shelldn"))
 
       match ctx.TryGetQueryStringValue "logoutId" with
       | Some id ->
@@ -46,7 +64,8 @@ type Startup private () =
 
   let api =
     choose [
-      route "/account/login" >=> loginHandler >=> redirectTo false "http://localhost:3000/callback.html"
+      GET >=> route "/account/login" >=> htmlView Views.login
+      POST >=> route "/account/login" >=> loginHandler
       route "/account/logout" >=> logoutHandler >=> redirectTo false "http://localhost:3000"
     ]
 
