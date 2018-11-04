@@ -29,8 +29,26 @@ type Startup private () =
       return! next ctx
     }
 
+  let logoutHandler (next : HttpFunc) (ctx : HttpContext) =
+    task {
+      let events = ctx.GetService<IEventService>()
+      let interaction = ctx.GetService<IIdentityServerInteractionService>()
+
+      do! ctx.SignOutAsync()
+      do! events.RaiseAsync(new UserLogoutSuccessEvent("1", "shelldn"))
+
+      match ctx.TryGetQueryStringValue "logoutId" with
+      | Some id ->
+        let! logout = interaction.GetLogoutContextAsync id
+        return! redirectTo false logout.PostLogoutRedirectUri next ctx
+      | None -> return! next ctx
+    }
+
   let api =
-    route "/account/login" >=> loginHandler >=> redirectTo false "http://localhost:3000/callback.html"
+    choose [
+      route "/account/login" >=> loginHandler >=> redirectTo false "http://localhost:3000/callback.html"
+      route "/account/logout" >=> logoutHandler >=> redirectTo false "http://localhost:3000"
+    ]
 
   new (configuration: IConfiguration) as this =
     Startup() then
