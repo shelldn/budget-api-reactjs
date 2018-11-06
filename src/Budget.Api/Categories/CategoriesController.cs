@@ -5,6 +5,8 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
+using System.Security.Claims;
+using Microsoft.Extensions.Logging;
 
 namespace Budget.Api.Categories
 {
@@ -12,21 +14,24 @@ namespace Budget.Api.Categories
     public sealed class CategoriesController : Controller
     {
         private readonly IConfiguration _config;
+        private readonly ILogger<CategoriesController> _log;
 
-        public CategoriesController(IConfiguration config)
+        public CategoriesController(IConfiguration config, ILogger<CategoriesController> log)
         {
             _config = config;
+            _log = log;
         }
 
         [HttpGet]
         public IEnumerable<CategorySummary> GetAll(int year)
         {
+            var accountId = Int32.Parse(User.FindFirstValue("sub"));
             var client = new MongoClient(_config["connectionString"]);
             var db = client.GetDatabase("budgetio");
             var categories = db.GetCollection<BsonDocument>("categories");
 
             var summaries = categories
-                .Find(c => c["budget_id"] == year)
+                .Find(c => c["account_id"] == accountId && c["budget_id"] == year)
                 .ToList()
                 .Select(c => new CategorySummary
                 {
@@ -47,6 +52,7 @@ namespace Budget.Api.Categories
 
             var doc = new BsonDocument
             {
+                ["account_id"] = Int32.Parse(User.FindFirstValue("sub")),
                 ["budget_id"] = year,
                 ["name"] = category.Name,
                 ["type"] = category.Type.ToString().ToLower()

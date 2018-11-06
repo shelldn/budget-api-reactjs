@@ -36,17 +36,29 @@ module Views =
       ]
     ]
 
+[<CLIMutable>]
+type LoginViewModel =
+  { Username : string
+    Password : string }
+
 type Startup private () =
 
   let loginHandler (next : HttpFunc) (ctx : HttpContext) =
     task {
-      do! ctx.SignInAsync("1", "shelldn", AuthenticationProperties())
+      let! vm = ctx.BindFormAsync<LoginViewModel>()
 
-      let returnUrl = ctx.TryGetQueryStringValue "returnUrl"
+      if vm.Username = "shelldn" && vm.Password = "qwerty123"
+      then
+        do! ctx.SignInAsync("1", "shelldn", AuthenticationProperties())
 
-      match returnUrl with
-      | Some url -> return! redirectTo false url next ctx
-      | None -> return! next ctx
+        let returnUrl = ctx.TryGetQueryStringValue "returnUrl"
+
+        match returnUrl with
+        | Some url -> return! redirectTo false url next ctx
+        | None -> return! next ctx
+
+      else
+        return! RequestErrors.BAD_REQUEST "Error." next ctx
     }
 
   let logoutHandler (next : HttpFunc) (ctx : HttpContext) =
