@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using System.Security.Claims;
 
 namespace Budget.Api.Operations
 {
@@ -20,12 +22,13 @@ namespace Budget.Api.Operations
         [HttpGet("/api/budgets/{year:int}/[controller]")]
         public IEnumerable<OperationSummary> GetAll(int year)
         {
+            var accountId = Int32.Parse(User.FindFirstValue("sub"));
             var client = new MongoClient(_config["connectionString"]);
             var db = client.GetDatabase("budgetio");
             var operations = db.GetCollection<BsonDocument>("operations");
 
             var summaries = operations
-                .Find(o => o["budget_id"] == year)
+                .Find(o => o["account_id"] == accountId && o["budget_id"] == year)
                 .ToList()
                 .Select(o => new OperationSummary
                 {
@@ -48,6 +51,7 @@ namespace Budget.Api.Operations
 
             var doc = new BsonDocument
             {
+                ["account_id"] = Int32.Parse(User.FindFirstValue("sub")),
                 ["budget_id"] = year,
                 ["category_id"] = ObjectId.Parse(operation.CategoryId),
                 ["month"] = operation.Month,
